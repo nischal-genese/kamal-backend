@@ -7,7 +7,7 @@ URL_DATABASE = url = URL.create(
     drivername="mysql+pymysql",
     username="backend",
     password="P@ssword123",
-    host="localhost",
+    host="backend-db",
     port=3306,
     database="backend",
 )

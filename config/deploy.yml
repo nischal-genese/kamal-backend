@@ -26,7 +26,7 @@ registry:
 # Remember to run `kamal env push` after making changes!
 env:
   clear:
-    PORT: 8080
+    PORT: 8000
     MAX_WORKERS: 3
 
 # Use a different ssh user than root
@@ -51,12 +51,14 @@ accessories:
     port: 3306
     env:
       clear:
+        MYSQL_ROOT_HOST: '%'
         MYSQL_DATABASE: backend
         MYSQL_USER: backend
       secret:
         - MYSQL_ROOT_PASSWORD
         - MYSQL_PASSWORD
     files:
+      # - config/mysql/production.cnf:/etc/mysql/my.cnf
       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
     directories:
       - data:/var/lib/mysql
@@ -79,7 +81,7 @@ accessories:
 # Configure a custom healthcheck (default is /up on port 3000)
 healthcheck:
   path: /
-  port: 8080
+  port: 8000
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old

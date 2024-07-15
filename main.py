@@ -2,10 +2,10 @@ from fastapi import FastAPI, Depends
 from typing import Annotated, List
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from database import SessionLocal, engine
-import models
+from app.database import SessionLocal, engine
+import app.models as models
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine
+from app.database import engine
 
 
 app = FastAPI()
@@ -16,7 +16,7 @@ async def check():
     return "hello"
 
 
-origins = ["http://localhost:5173"]
+origins = ["https://kamal.valmikiai.com"]
 
 app.add_middleware(
     CORSMiddleware,

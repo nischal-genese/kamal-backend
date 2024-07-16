@@ -8,8 +8,9 @@ image: nischalgenese/backend
 servers:
   web:
     hosts:
-      - 13.200.249.236
+      - 15.206.68.164
     options:
+      # This network must be created before hand in the server either manually or using Kamal hooks
       network: backend
 
 # Credentials for your image host.
@@ -26,62 +27,69 @@ registry:
 # Remember to run `kamal env push` after making changes!
 env:
   clear:
-    PORT: 8000
     MAX_WORKERS: 3
+  secret:
+    - MYSQL_PASSWORD
+    - MYSQL_USER
+    - MYSQL_HOST
+    - MYSQL_DATABASE
+    - ALLOWED_ORIGINS
 
 # Use a different ssh user than root
 ssh:
   user: ubuntu
 
-# Configure builder setup.
-# builder:
-#   args:
-#     RUBY_VERSION: 3.2.0
-#   secrets:
-#     - GITHUB_TOKEN
-#   remote:
-#     arch: amd64
-#     host: ssh://app@192.168.0.1
-
 # Use accessory services (secrets come from .env).
 accessories:
   db:
     image: mysql:8.0.36-debian
-    host: 13.200.249.236
+    host: 15.206.68.164
     port: 3306
     env:
       clear:
         MYSQL_ROOT_HOST: '%'
-        MYSQL_DATABASE: backend
-        MYSQL_USER: backend
       secret:
-        - MYSQL_ROOT_PASSWORD
         - MYSQL_PASSWORD
+        - MYSQL_ROOT_PASSWORD
+        - MYSQL_DATABASE
+        - MYSQL_HOST
+        - MYSQL_USER
     files:
-      # - config/mysql/production.cnf:/etc/mysql/my.cnf
       - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
     directories:
       - data:/var/lib/mysql
     options:
       network: backend
       user: 1000:1000
-#   redis:
-#     image: redis:7.0
-#     host: 192.168.0.2
-#     port: 6379
-#     directories:
-#       - data:/data
 
 # Configure custom arguments for Traefik. Be sure to reboot traefik when you modify it.
-# traefik:
-#   args:
-#     accesslog: true
-#     accesslog.format: json
+traefik:
+  image: traefik:v3.0.0-beta5
+  options:
+    publish:
+      - "8080:8080"
+    volume: "/letsencrypt/acme.json:/letsencrypt/acme.json"
+    network: "backend"
+  args:
+    api.dashboard: true
+    api.insecure: true
+    log.level: INFO
+    accesslog.format: json
+    accesslog.filters.statusCodes: "400-599"
+    accesslog.filters.retryAttempts: true
+    accesslog.filters.minDuration: 101ms
+
+    entryPoints.web.address: ":80"
+    entryPoints.websecure.address: ":443"
+  labels:
+    traefik.http.routers.dashboard.rule: Host(`traefikb.valmikiai.com`)
+    traefik.http.routers.dashboard.service: api@internal
 
 # Configure a custom healthcheck (default is /up on port 3000)
 healthcheck:
   path: /
-  port: 8000
+  port: 80
+  interval: 5s
 
 # Bridge fingerprinted assets, like JS and CSS, between versions to avoid
 # hitting 404 on in-flight requests. Combines all files from new and old

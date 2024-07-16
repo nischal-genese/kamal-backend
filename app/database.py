@@ -3,13 +3,16 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import URL
 
+from env_loader import db_host, db_database, db_username, db_password
+
+# Database configuration
 URL_DATABASE = url = URL.create(
     drivername="mysql+pymysql",
-    username="backend",
-    password="P@ssword123",
-    host="backend-db",
+    username=db_username,
+    password=db_password,
+    host=db_host,
     port=3306,
-    database="backend",
+    database=db_database,
 )
 engine = create_engine(URL_DATABASE)
 
